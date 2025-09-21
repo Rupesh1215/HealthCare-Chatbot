@@ -24,6 +24,34 @@ const ChatInterface = ({ user }) => {
     return String(content);
   };
 
+  // Function to format message with line breaks and bold text
+  const formatMessageWithLineBreaks = (text) => {
+    if (typeof text !== 'string') return text;
+    
+    const lines = text.split('\n');
+    return lines.map((line, index) => {
+      if (line.trim() === '') {
+        return <br key={index} />;
+      }
+      
+      // Handle bold formatting (**text**)
+      const parts = line.split(/\*\*(.*?)\*\*/g);
+      const formattedLine = parts.map((part, i) => {
+        if (i % 2 === 1) {
+          return <strong key={i}>{part}</strong>;
+        }
+        return part;
+      });
+      
+      return (
+        <React.Fragment key={index}>
+          {formattedLine}
+          <br />
+        </React.Fragment>
+      );
+    });
+  };
+
   useEffect(() => {
     socketRef.current = io('http://localhost:5000', {
       auth: {
@@ -156,7 +184,9 @@ const ChatInterface = ({ user }) => {
               className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`}
             >
               <div className="message-content">
-                <p>{renderSafeContent(message.text)}</p>
+                <div className="message-text">
+                  {formatMessageWithLineBreaks(renderSafeContent(message.text))}
+                </div>
                 <span className="message-time">
                   {new Date(message.timestamp).toLocaleTimeString()}
                 </span>

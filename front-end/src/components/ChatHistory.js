@@ -76,10 +76,17 @@ const ChatHistory = ({ user }) => {
               </div>
               <div className="chat-content">
                 <div className="user-query">
-                  <strong>You:</strong> {renderSafeContent(chat.query)}
+                  <strong>You:</strong> 
+                  <div className="query-text">{renderSafeContent(chat.query)}</div>
                 </div>
                 <div className="bot-response">
-                  <strong>Health Assistant:</strong> {renderSafeContent(chat.response)}
+                  <strong>Health Assistant:</strong>
+                  <div 
+                    className="response-text" 
+                    style={{ whiteSpace: 'pre-line' }}
+                  >
+                    {renderSafeContent(chat.response)}
+                  </div>
                 </div>
               </div>
             </div>

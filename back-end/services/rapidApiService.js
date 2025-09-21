@@ -1,11 +1,41 @@
 const axios = require('axios');
 
-const RAPIDAPI_URL = process.env.RAPIDAPI_URL || 'https://chatgpt-42.p.rapidapi.com/aitohuman';
+const RAPIDAPI_URL = process.env.RAPIDAPI_URL || 'https://chatgpt-42.p.rapidapi.com/gpt4';
 const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || 'chatgpt-42.p.rapidapi.com';
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
 
 // Conversation history to maintain context
 const conversationHistory = new Map();
+
+// System prompt to make the AI act like a doctor
+// System prompt to make the AI act like a doctor with proper formatting
+const SYSTEM_PROMPT = `You are Dr. CareBot, a compassionate and highly experienced medical professional. When users describe health concerns, provide comprehensive advice with CLEAR FORMATTING:
+
+IMPORTANT FORMATTING RULES:
+1. Use line breaks between sections (double line breaks)
+2. Use bullet points for lists
+3. Use bold for section headers
+4. Keep each section clearly separated
+5. Make it easy to read on a mobile device
+
+ALWAYS include these sections with proper formatting:
+
+**Symptoms Analysis:**
+[Analyze the mentioned symptoms and their possible causes]
+
+**Precautions:**
+[Specific care instructions and preventive measures - use bullet points]
+
+**Medicine:**
+[Appropriate medication suggestions - always recommend doctor consultation - use bullet points]
+
+**Food:**
+[Dietary recommendations and foods to consume/avoid - use bullet points]
+
+**Additional Advice:**
+[Warning signs and when to seek emergency care - use bullet points]
+
+Format your response in a warm, empathetic, and professional manner. Be specific and practical in your advice. Use proper line breaks and spacing for mobile readability.`;
 
 async function processHealthQuery(userMessage, userId) {
   // Check if RapidAPI is configured
@@ -16,20 +46,22 @@ async function processHealthQuery(userMessage, userId) {
   try {
     // Get or initialize conversation history for this user
     if (!conversationHistory.has(userId)) {
-      conversationHistory.set(userId, []);
+      conversationHistory.set(userId, [
+        { role: "system", content: SYSTEM_PROMPT }
+      ]);
     }
 
     const history = conversationHistory.get(userId);
     
     // Add user message to history
-    history.push(userMessage);
+    history.push({ role: "user", content: userMessage });
 
-    // Prepare the request data based on the API's expected format
-    // From the error, it seems the API expects simple text, not messages array
+    // Prepare the request data for GPT-4 endpoint
     const requestData = {
-      text: userMessage, // Just send the current message
+      messages: history, // Send entire conversation history
       temperature: 0.7,
-      max_tokens: 500
+      max_tokens: 800,
+      model: "gpt-4" // Specify GPT-4 model
     };
 
     const options = {
@@ -41,25 +73,26 @@ async function processHealthQuery(userMessage, userId) {
         'X-RapidAPI-Host': RAPIDAPI_HOST
       },
       data: requestData,
-      timeout: 15000
+      timeout: 20000 // 20 second timeout for GPT-4
     };
 
-    console.log('Sending request to RapidAPI...');
+    console.log('Sending request to RapidAPI GPT-4...');
     const response = await axios.request(options);
     
     // Extract the response - handle different possible formats
     let aiResponse = '';
     
-    if (response.data && response.data.status === true && response.data.result) {
-      // Handle format: {"result":["response"],"status":true}
+    if (response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
+      // Standard OpenAI format: {"choices": [{"message": {"content": "response"}}]}
+      aiResponse = response.data.choices[0].message.content;
+    }
+    else if (response.data && response.data.result) {
+      // Handle format: {"result": "response"}
       if (Array.isArray(response.data.result)) {
         aiResponse = response.data.result[0] || '';
       } else {
         aiResponse = response.data.result;
       }
-    } 
-    else if (response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
-      aiResponse = response.data.choices[0].message.content;
     }
     else if (response.data && response.data.response) {
       aiResponse = response.data.response;
@@ -71,6 +104,7 @@ async function processHealthQuery(userMessage, userId) {
       throw new Error(`API Error: ${response.data.error}`);
     }
     else {
+      console.log('Unexpected response format:', response.data);
       throw new Error('Unexpected response format from API');
     }
 
@@ -78,11 +112,13 @@ async function processHealthQuery(userMessage, userId) {
     aiResponse = aiResponse.trim();
     
     // Add AI response to conversation history
-    history.push(aiResponse);
+    history.push({ role: "assistant", content: aiResponse });
 
-    // Keep conversation history manageable (last 6 messages)
-    if (history.length > 6) {
-      conversationHistory.set(userId, history.slice(-6));
+    // Keep conversation history manageable (last 8 messages)
+    if (history.length > 8) {
+      const systemPrompt = history[0];
+      const recentMessages = history.slice(-7);
+      conversationHistory.set(userId, [systemPrompt, ...recentMessages]);
     }
 
     return aiResponse;
