@@ -1,4 +1,4 @@
-/* Green Medical Theme with Video Background */
+/* Enhanced Green Medical Theme with Video Background */
 * {
   margin: 0;
   padding: 0;
@@ -14,7 +14,7 @@
   overflow: hidden;
 }
 
-/* Video Background */
+/* Video Background with Loading State */
 .video-background {
   position: absolute;
   top: 0;
@@ -30,6 +30,27 @@
   height: 100%;
   object-fit: cover;
   filter: brightness(0.4);
+  transition: opacity 0.5s ease;
+}
+
+.video-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #166534 0%, #22c55e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pulse-animation {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  animation: pulse 2s infinite ease-in-out;
 }
 
 .video-overlay {
@@ -41,7 +62,7 @@
   background: linear-gradient(135deg, rgba(34, 139, 34, 0.1) 0%, rgba(46, 204, 113, 0.1) 100%);
 }
 
-/* Header Styles - GREEN THEME */
+/* Header Styles - ENHANCED GREEN THEME */
 .chat-header {
   display: flex;
   justify-content: space-between;
@@ -155,7 +176,7 @@
   font-weight: 500;
 }
 
-/* Language Selector - FIXED VISIBILITY */
+/* Enhanced Language Selector */
 .language-selector {
   position: relative;
 }
@@ -212,13 +233,16 @@
   border-radius: 12px;
   padding: 0.5rem;
   z-index: 1001;
-  min-width: 180px;
+  min-width: 200px;
   box-shadow: 0 10px 40px rgba(34, 139, 34, 0.2);
   border: 1px solid #bbf7d0;
   animation: slideDown 0.3s ease;
 }
 
 .language-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 0.6rem;
   border-bottom: 1px solid #dcfce7;
   margin-bottom: 0.4rem;
@@ -228,7 +252,46 @@
   color: #166534;
   font-size: 0.85rem;
   font-weight: 600;
-  text-align: center;
+}
+
+.close-menu-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #65a30d;
+  padding: 0.2rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.close-menu-btn:hover {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.language-options-list {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.language-options-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.language-options-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.language-options-list::-webkit-scrollbar-thumb {
+  background: rgba(34, 197, 94, 0.4);
+  border-radius: 2px;
+}
+
+.language-options-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 197, 94, 0.6);
 }
 
 .language-option {
@@ -318,6 +381,12 @@
   margin-bottom: 1.2rem;
   opacity: 0.9;
   text-shadow: 0 2px 10px rgba(34, 197, 94, 0.5);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 .empty-chat h3 {
@@ -353,6 +422,12 @@
   border-radius: 12px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(34, 197, 94, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
 }
 
 .feature-icon {
@@ -372,6 +447,18 @@
 .message {
   display: flex;
   max-width: 78%;
+  animation: messageAppear 0.3s ease;
+}
+
+@keyframes messageAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .user-message {
@@ -398,6 +485,11 @@
   font-size: 1.1rem;
   flex-shrink: 0;
   backdrop-filter: blur(10px);
+  transition: transform 0.3s ease;
+}
+
+.message:hover .message-avatar {
+  transform: scale(1.05);
 }
 
 .user-message .message-avatar {
@@ -419,6 +511,12 @@
   position: relative;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(34, 197, 94, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.message:hover .message-bubble {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(34, 139, 34, 0.2);
 }
 
 .user-message .message-bubble {
@@ -692,6 +790,18 @@
   border-radius: 12px;
   border: 2px solid rgba(34, 197, 94, 0.2);
   backdrop-filter: blur(10px);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .pulse-ring {
@@ -746,6 +856,57 @@
   background: #dc2626;
 }
 
+/* Stop Speech Button - Fixed Position */
+.stop-speech-container {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  z-index: 1000;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.stop-speech-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  border: 1px solid #dc2626;
+}
+
+.stop-speech-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.stop-icon {
+  font-size: 1rem;
+}
+
+.stop-text {
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
 /* Animations */
 @keyframes pulse {
   0% { transform: scale(1); opacity: 1; }
@@ -783,11 +944,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-@keyframes rotatePlus {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 /* Responsive Design */
@@ -906,6 +1062,16 @@
     right: -30px;
     min-width: 160px;
   }
+  
+  .stop-speech-container {
+    bottom: 90px;
+    right: 20px;
+  }
+  
+  .stop-speech-btn {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+  }
 }
 
 /* Scrollbar Styling */
@@ -925,4 +1091,20 @@
 
 .chat-messages::-webkit-scrollbar-thumb:hover {
   background: rgba(34, 197, 94, 0.6);
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #22c55e;
+  outline-offset: 2px;
+}
+
+/* Reduced motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

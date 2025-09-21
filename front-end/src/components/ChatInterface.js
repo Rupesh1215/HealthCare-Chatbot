@@ -11,9 +11,11 @@ const ChatInterface = ({ user }) => {
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const messagesEndRef = useRef(null);
   const socketRef = useRef();
   const videoRef = useRef(null);
+  const speechTimeoutRef = useRef(null);
 
   const {
     transcript,
@@ -28,7 +30,7 @@ const ChatInterface = ({ user }) => {
 
   // Initialize speech synthesis and video background
   useEffect(() => {
-    speechSynthesizer.init();
+    speechSynthesizer.init(handleSpeechStart, handleSpeechEnd, handleSpeechError);
     
     // Setup video background
     if (videoRef.current) {
@@ -36,7 +38,17 @@ const ChatInterface = ({ user }) => {
       videoRef.current.loop = true;
       videoRef.current.muted = true;
       videoRef.current.play().catch(console.error);
+      
+      videoRef.current.addEventListener('loadeddata', () => {
+        setIsVideoLoaded(true);
+      });
     }
+
+    return () => {
+      if (speechTimeoutRef.current) {
+        clearTimeout(speechTimeoutRef.current);
+      }
+    };
   }, []);
 
   function handleSpeechResult(text, language) {
@@ -45,6 +57,19 @@ const ChatInterface = ({ user }) => {
       handleSendMessage(null, text);
     }
   }
+
+  const handleSpeechStart = () => {
+    setIsSpeaking(true);
+  };
+
+  const handleSpeechEnd = () => {
+    setIsSpeaking(false);
+  };
+
+  const handleSpeechError = (error) => {
+    console.error('Speech synthesis error:', error);
+    setIsSpeaking(false);
+  };
 
   const handleMicClick = () => {
     if (isListening) {
@@ -66,13 +91,26 @@ const ChatInterface = ({ user }) => {
   const speakMessage = async (text) => {
     if (!text || isSpeaking) return;
     
-    setIsSpeaking(true);
+    // Clean the text for better speech synthesis
+    const cleanedText = cleanTextForSpeech(text);
+    
     try {
-      await speechSynthesizer.speak(text, selectedLanguage);
+      await speechSynthesizer.speak(cleanedText, selectedLanguage);
     } catch (error) {
       console.error('Speech synthesis error:', error);
     }
-    setIsSpeaking(false);
+  };
+
+  const cleanTextForSpeech = (text) => {
+    if (typeof text !== 'string') return String(text);
+    
+    // Remove quotes and other problematic characters for speech
+    return text
+      .replace(/["']/g, '') // Remove quotes
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove markdown bold but keep text
+      .replace(/\n/g, '. ') // Replace newlines with pauses
+      .replace(/\s+/g, ' ') // Collapse multiple spaces
+      .trim();
   };
 
   const stopSpeaking = () => {
@@ -146,7 +184,11 @@ const ChatInterface = ({ user }) => {
       };
       
       setMessages(prev => [...prev, newMessage]);
-      speakMessage(renderSafeContent(data.message));
+      
+      // Add a small delay before speaking to improve UX
+      speechTimeoutRef.current = setTimeout(() => {
+        speakMessage(renderSafeContent(data.message));
+      }, 800);
     });
 
     socketRef.current.on('bot_typing', () => {
@@ -172,6 +214,10 @@ const ChatInterface = ({ user }) => {
       }
       stopSpeaking();
       stopListening();
+      
+      if (speechTimeoutRef.current) {
+        clearTimeout(speechTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -241,7 +287,7 @@ const ChatInterface = ({ user }) => {
 
   return (
     <div className="chat-container">
-      {/* Video Background */}
+      {/* Video Background with Loading State */}
       <div className="video-background">
         <video
           ref={videoRef}
@@ -250,10 +296,18 @@ const ChatInterface = ({ user }) => {
           muted
           loop
           playsInline
+          onLoadedData={() => setIsVideoLoaded(true)}
         >
           <source src="/videos/medical-background.mp4" type="video/mp4" />
           <source src="/videos/medical-background.webm" type="video/webm" />
         </video>
+        {!isVideoLoaded && (
+          <div className="video-placeholder">
+            <div className="placeholder-content">
+              <div className="pulse-animation"></div>
+            </div>
+          </div>
+        )}
         <div className="video-overlay"></div>
       </div>
 
@@ -288,6 +342,7 @@ const ChatInterface = ({ user }) => {
               className="language-btn"
               onClick={() => setShowLanguageMenu(!showLanguageMenu)}
               title="Select Language"
+              aria-expanded={showLanguageMenu}
             >
               <span className="language-icon">🌐</span>
               <span className="language-text">{getLanguageName(selectedLanguage)}</span>
@@ -298,24 +353,34 @@ const ChatInterface = ({ user }) => {
               <div className="language-menu">
                 <div className="language-menu-header">
                   <h4>Select Language</h4>
-                </div>
-                {supportedLanguages.map((language) => (
-                  <button
-                    key={language.code}
-                    className={`language-option ${selectedLanguage === language.code ? 'selected' : ''}`}
-                    onClick={() => handleLanguageSelect(language.code)}
+                  <button 
+                    className="close-menu-btn"
+                    onClick={() => setShowLanguageMenu(false)}
+                    aria-label="Close language menu"
                   >
-                    <span className="option-flag">{language.nativeName.includes('हिन्दी') ? '🇮🇳' : 
-                      language.nativeName.includes('తెలుగు') ? '🇮🇳' : '🌐'}</span>
-                    <span className="option-text">
-                      <span className="native-name">{language.nativeName}</span>
-                      <span className="english-name">{language.name}</span>
-                    </span>
-                    {selectedLanguage === language.code && (
-                      <span className="checkmark">✓</span>
-                    )}
+                    ×
                   </button>
-                ))}
+                </div>
+                <div className="language-options-list">
+                  {supportedLanguages.map((language) => (
+                    <button
+                      key={language.code}
+                      className={`language-option ${selectedLanguage === language.code ? 'selected' : ''}`}
+                      onClick={() => handleLanguageSelect(language.code)}
+                      aria-selected={selectedLanguage === language.code}
+                    >
+                      <span className="option-flag">{language.nativeName.includes('हिन्दी') ? '🇮🇳' : 
+                        language.nativeName.includes('తెలుగు') ? '🇮🇳' : '🌐'}</span>
+                      <span className="option-text">
+                        <span className="native-name">{language.nativeName}</span>
+                        <span className="english-name">{language.name}</span>
+                      </span>
+                      {selectedLanguage === language.code && (
+                        <span className="checkmark">✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -398,6 +463,7 @@ const ChatInterface = ({ user }) => {
                 placeholder={`Describe your symptoms or ask a question... (${getLanguageName(selectedLanguage)})`}
                 disabled={isTyping}
                 className="message-input"
+                aria-label="Message input"
               />
               
               <div className="input-actions">
@@ -408,6 +474,7 @@ const ChatInterface = ({ user }) => {
                     onClick={handleMicClick}
                     disabled={isTyping}
                     title={isListening ? 'Stop listening' : 'Start voice input'}
+                    aria-label={isListening ? 'Stop listening' : 'Start voice input'}
                   >
                     <span className="btn-icon">{isListening ? '⏹️' : '🎤'}</span>
                     <span className="btn-tooltip">
@@ -422,6 +489,7 @@ const ChatInterface = ({ user }) => {
                   onClick={stopSpeaking}
                   disabled={!isSpeaking}
                   title="Stop speech"
+                  aria-label="Stop speech"
                 >
                   <span className="btn-icon">🔇</span>
                   <span className="btn-tooltip">Stop Speech</span>
@@ -433,6 +501,7 @@ const ChatInterface = ({ user }) => {
               type="submit" 
               disabled={isTyping || inputMessage.trim() === ''}
               className="send-button"
+              aria-label="Send message"
             >
               <span className="send-icon">➤</span>
               <span className="send-text">Send</span>
@@ -451,12 +520,28 @@ const ChatInterface = ({ user }) => {
               className="stop-listening-btn"
               onClick={stopListening}
               title="Stop listening"
+              aria-label="Stop listening"
             >
               ⏹️
             </button>
           </div>
         )}
       </div>
+
+      {/* Stop Speech Button - Fixed Position */}
+      {isSpeaking && (
+        <div className="stop-speech-container">
+          <button 
+            className="stop-speech-btn"
+            onClick={stopSpeaking}
+            title="Stop speech"
+            aria-label="Stop speech"
+          >
+            <span className="stop-icon">⏹️</span>
+            <span className="stop-text">Stop Voice</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };
