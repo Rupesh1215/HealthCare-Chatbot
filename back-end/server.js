@@ -42,42 +42,41 @@ app.get('/health', (req, res) => {
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
   
-  socket.on('user_message', async (data) => {
-    console.log('Received message:', data);
+  // In the socket.io message handler, add language support:
+socket.on('user_message', async (data) => {
+  console.log('Received message:', data);
+  
+  // Show typing indicator
+  socket.emit('bot_typing');
+  
+  try {
+    // Process with RapidAPI ChatGPT - pass language if needed
+    const aiResponse = await processHealthQuery(data.message, data.userId, data.language);
     
-    // Show typing indicator
-    socket.emit('bot_typing');
+    // Save chat to database
+    await chatController.saveChat(data.userId, data.message, aiResponse);
     
-    try {
-      // Process with RapidAPI ChatGPT
-      const aiResponse = await processHealthQuery(data.message, data.userId);
-      
-      // Save chat to database
-      await chatController.saveChat(data.userId, data.message, aiResponse);
-      
-      // Send response to client
-      socket.emit('chat_message', { 
-        message: aiResponse
-      });
-      
-    } catch (error) {
-      console.error('Error processing message with AI:', error);
-      
-      // Send clean error response
-      const errorResponse = `I apologize, but I'm experiencing technical difficulties. 😔
+    // Send response to client
+    socket.emit('chat_message', { 
+      message: aiResponse
+    });
+    
+  } catch (error) {
+    console.error('Error processing message with AI:', error);
+    
+    const errorResponse = `I apologize, but I'm experiencing technical difficulties. 😔
 
 ${error.message}
 
 Please try asking your question again.`;
 
-      // Save error response
-      await chatController.saveChat(data.userId, data.message, errorResponse);
-      
-      socket.emit('chat_message', { 
-        message: errorResponse
-      });
-    }
-  });
+    await chatController.saveChat(data.userId, data.message, errorResponse);
+    
+    socket.emit('chat_message', { 
+      message: errorResponse
+    });
+  }
+});
   
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
