@@ -10,6 +10,7 @@ const ChatInterface = ({ user }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentlySpeakingId, setCurrentlySpeakingId] = useState(null);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const messagesEndRef = useRef(null);
@@ -64,11 +65,13 @@ const ChatInterface = ({ user }) => {
 
   const handleSpeechEnd = () => {
     setIsSpeaking(false);
+    setCurrentlySpeakingId(null);
   };
 
   const handleSpeechError = (error) => {
     console.error('Speech synthesis error:', error);
     setIsSpeaking(false);
+    setCurrentlySpeakingId(null);
   };
 
   const handleMicClick = () => {
@@ -88,16 +91,18 @@ const ChatInterface = ({ user }) => {
     }
   };
 
-  const speakMessage = async (text) => {
+  const speakMessage = async (text, messageId = null) => {
     if (!text || isSpeaking) return;
     
     // Clean the text for better speech synthesis
     const cleanedText = cleanTextForSpeech(text);
     
     try {
+      setCurrentlySpeakingId(messageId);
       await speechSynthesizer.speak(cleanedText, selectedLanguage);
     } catch (error) {
       console.error('Speech synthesis error:', error);
+      setCurrentlySpeakingId(null);
     }
   };
 
@@ -116,6 +121,7 @@ const ChatInterface = ({ user }) => {
   const stopSpeaking = () => {
     speechSynthesizer.stop();
     setIsSpeaking(false);
+    setCurrentlySpeakingId(null);
   };
 
   const renderSafeContent = (content) => {
@@ -184,11 +190,6 @@ const ChatInterface = ({ user }) => {
       };
       
       setMessages(prev => [...prev, newMessage]);
-      
-      // Add a small delay before speaking to improve UX
-      speechTimeoutRef.current = setTimeout(() => {
-        speakMessage(renderSafeContent(data.message));
-      }, 800);
     });
 
     socketRef.current.on('bot_typing', () => {
@@ -311,8 +312,8 @@ const ChatInterface = ({ user }) => {
         <div className="video-overlay"></div>
       </div>
 
-      {/* Header */}
-      <header className="chat-header">
+      {/* Header with Glass Effect */}
+      <header className="chat-header glass-header">
         <div className="header-left">
           <div className="logo">
             <div className="logo-icon">
@@ -330,7 +331,7 @@ const ChatInterface = ({ user }) => {
         </div>
         
         <div className="header-right">
-          <div className="connection-status-wrapper">
+          <div className="connection-status-wrapper glass-element">
             <div className={`status-dot ${connectionStatus}`}></div>
             <span className="status-text">
               {connectionStatus === 'connected' ? 'Connected' : 'Disconnected'}
@@ -339,7 +340,7 @@ const ChatInterface = ({ user }) => {
           
           <div className="language-selector">
             <button 
-              className="language-btn"
+              className="language-btn glass-element"
               onClick={() => setShowLanguageMenu(!showLanguageMenu)}
               title="Select Language"
               aria-expanded={showLanguageMenu}
@@ -350,7 +351,7 @@ const ChatInterface = ({ user }) => {
             </button>
             
             {showLanguageMenu && (
-              <div className="language-menu">
+              <div className="language-menu glass-menu">
                 <div className="language-menu-header">
                   <h4>Select Language</h4>
                   <button 
@@ -426,6 +427,23 @@ const ChatInterface = ({ user }) => {
                   <span className="message-time">
                     {new Date(message.timestamp).toLocaleTimeString()}
                   </span>
+                  {/* Speaker button for bot messages */}
+                  {message.sender === 'bot' && (
+                    <button
+                      className={`speaker-btn ${currentlySpeakingId === message.id ? 'speaking' : ''}`}
+                      onClick={() => {
+                        if (currentlySpeakingId === message.id) {
+                          stopSpeaking();
+                        } else {
+                          speakMessage(message.text, message.id);
+                        }
+                      }}
+                      title={currentlySpeakingId === message.id ? 'Stop reading' : 'Read aloud'}
+                      aria-label={currentlySpeakingId === message.id ? 'Stop reading' : 'Read aloud'}
+                    >
+                      {currentlySpeakingId === message.id ? '🔇' : '🔊'}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -452,7 +470,7 @@ const ChatInterface = ({ user }) => {
       </div>
 
       {/* Input Area */}
-      <div className="chat-input-container">
+      <div className="chat-input-container glass-input">
         <form className="chat-input-form" onSubmit={handleSendMessage}>
           <div className="input-wrapper">
             <div className="input-field">
@@ -483,16 +501,33 @@ const ChatInterface = ({ user }) => {
                   </button>
                 )}
                 
+                {/* Stop button for voice input */}
+                {isListening && (
+                  <button
+                    type="button"
+                    className="action-btn stop-btn"
+                    onClick={stopListening}
+                    title="Stop listening"
+                    aria-label="Stop listening"
+                  >
+                    <span className="btn-icon">⏹️</span>
+                    <span className="btn-tooltip">Stop</span>
+                  </button>
+                )}
+                
+                {/* Stop button for speech synthesis */}
                 <button
                   type="button"
                   className={`action-btn speaker-btn ${isSpeaking ? 'speaking' : ''}`}
                   onClick={stopSpeaking}
                   disabled={!isSpeaking}
-                  title="Stop speech"
-                  aria-label="Stop speech"
+                  title={isSpeaking ? 'Stop all speech' : 'No speech active'}
+                  aria-label={isSpeaking ? 'Stop all speech' : 'No speech active'}
                 >
                   <span className="btn-icon">🔇</span>
-                  <span className="btn-tooltip">Stop Speech</span>
+                  <span className="btn-tooltip">
+                    {isSpeaking ? 'Stop All Speech' : 'No Speech'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -500,7 +535,7 @@ const ChatInterface = ({ user }) => {
             <button 
               type="submit" 
               disabled={isTyping || inputMessage.trim() === ''}
-              className="send-button"
+              className="send-button glass-send"
               aria-label="Send message"
             >
               <span className="send-icon">➤</span>
@@ -510,7 +545,7 @@ const ChatInterface = ({ user }) => {
         </form>
 
         {isListening && (
-          <div className="speech-indicator">
+          <div className="speech-indicator glass-element">
             <div className="pulse-ring"></div>
             <div className="speech-text">
               <span className="listening-text">Listening...</span>
@@ -532,13 +567,13 @@ const ChatInterface = ({ user }) => {
       {isSpeaking && (
         <div className="stop-speech-container">
           <button 
-            className="stop-speech-btn"
+            className="stop-speech-btn glass-element"
             onClick={stopSpeaking}
-            title="Stop speech"
-            aria-label="Stop speech"
+            title="Stop all speech"
+            aria-label="Stop all speech"
           >
             <span className="stop-icon">⏹️</span>
-            <span className="stop-text">Stop Voice</span>
+            <span className="stop-text">Stop All Voice</span>
           </button>
         </div>
       )}

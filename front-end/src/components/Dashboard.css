@@ -1,120 +1,332 @@
 /* Dashboard.css */
-.dashboard-container {
-  min-height: 100vh;
-  background-color: #f5f5f5;
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes bounceIcon {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes pulseLogo {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes jump {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+@keyframes fadeScaleOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.75);
+  }
 }
 
-.dashboard-header {
-  background-color: white;
-  padding: 1rem 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* fade and scale out animation for container */
+.dashboard-container.fade-scale-out {
+  animation: fadeScaleOut 0.5s forwards ease;
 }
 
-.dashboard-header h1 {
+/* Emitting glowing text with reduced intensity */
+.emitting-text {
+  position: relative;
   color: #4285f4;
-}
-
-.user-menu {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.logout-btn {
-  padding: 0.5rem 1rem;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.logout-btn:hover {
-  background-color: #d32f2f;
-}
-
-.dashboard-main {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.welcome-section {
+  font-weight: 700;
   text-align: center;
-  margin-bottom: 3rem;
+  text-shadow:
+    0 0 4px #4285f4aa,
+    0 0 8px #81a6f980;
 }
 
-.welcome-section h2 {
-  color: #333;
-  margin-bottom: 1rem;
+/* Card style with fixed width and height for consistency */
+.fixed-size-card {
+  width: 300px;
+  height: 190px;
 }
 
-.welcome-section p {
-  color: #666;
-  font-size: 1.1rem;
+/* Button style with fixed dimensions for consistency */
+.fixed-size-btn {
+  width: 110px;
+  height: 40px;
+  font-size: 1rem;
+  padding: 0;
 }
 
-.action-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
-}
-
+/* Reduced glow border for cards */
 .action-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.91);
+  backdrop-filter: blur(14px);
+  border-radius: 14px;
+  box-shadow:
+    0 0 8px 1.5px rgba(66, 133, 244, 0.18),
+    0 6px 20px rgba(66, 133, 244, 0.12);
+  color: #222;
   text-decoration: none;
-  color: inherit;
-  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center horizontally */
+  justify-content: center; /* Center vertically */
+  padding: 1.6em 1.2em;
+  max-width: 320px;
+  margin: 1rem auto;
+  text-align: center; /* Center text */
+
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  animation: fadeUp 0.75s cubic-bezier(0.44, 0.37, 0.26, 1.29) backwards;
 }
 
-.action-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+/* Lift animation on hover */
+.lift-hover:hover,
+.lift-hover:focus {
+  animation: jump 0.35s ease;
+  transform-origin: center bottom;
+  box-shadow:
+    0 0 14px 3px rgba(66, 133, 244, 0.35),
+    0 14px 42px rgba(59, 97, 187, 0.21);
+  background: rgba(255, 255, 255, 0.97);
 }
 
+/* Remove jump if animation playing - fallback */
+.action-card:active {
+  animation: none;
+  transform: scale(0.98);
+  box-shadow:
+    0 0 18px 3px rgba(66, 133, 244, 0.4);
+  background: #e3e9ff;
+}
+
+/* Bounce animation for icons with reduced size */
 .card-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+  font-size: 2.7rem;
+  color: #4285f4;
+  margin-bottom: 0.6em;
+  animation: bounceIcon 1.2s ease-in-out infinite;
 }
 
+/* Text styles with reduced size */
 .action-card h3 {
-  color: #4285f4;
-  margin-bottom: 1rem;
+  font-size: 1.35rem;
+  margin: 0.2em 0 0.55em 0;
+  user-select: none;
 }
 
 .action-card p {
-  color: #666;
-  line-height: 1.5;
+  font-size: 1rem;
+  color: #444;
+  user-select: none;
+  line-height: 1.3;
 }
 
+/* Container background and font */
+.dashboard-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #b9c6f9 0%, #e8ecfa 50%, #f5f5f5 100%);
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  overflow-x: hidden;
+  padding-top: 1.5rem;
+}
+
+/* Floating user menu */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.82);
+  border-radius: 40px;
+  padding: 0.28rem 1rem;
+  box-shadow: 0 4px 18px rgba(66, 133, 244, 0.12);
+  animation: fadeIn 0.7s both;
+  justify-content: space-between;
+}
+
+/* Use consistent width for user menu to align with cards */
+.user-menu {
+  max-width: 450px;
+  margin-left: auto;
+  margin-right: 1rem;
+}
+
+/* User welcome text */
+.user-welcome-text {
+  color: #2c2c2c;
+  font-size: 1.1rem;
+}
+
+/* Logout Button with lift effect */
+.logout-btn {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 40px;
+  color: white;
+  background: linear-gradient(90deg, #f44336 0%, #d32f2f 100%);
+  box-shadow: 0 2px 6px rgba(244, 67, 54, 0.12);
+  transition: box-shadow 0.3s ease, background 0.25s ease;
+  padding: 0.4em 1.25em;
+  height: 40px;
+  width: 110px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logout-btn:hover {
+  box-shadow: 0 7px 22px rgba(244, 67, 54, 0.3);
+  background: linear-gradient(90deg, #d32f2f 0%, #f44336 100%);
+}
+
+/* Welcome Section */
+.welcome-section {
+  text-align: center;
+  margin-bottom: 3rem;
+  animation: fadeIn 1s;
+}
+
+.welcome-section h2 {
+  font-weight: 700;
+  font-size: 1.85rem;
+  color: #26345d;
+  margin-bottom: 0.3rem;
+}
+
+.welcome-section p {
+  font-size: 1.1rem;
+  color: #545454;
+}
+
+/* Center cards grid with fixed row height */
+.action-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-auto-rows: 200px;
+  gap: 1.6rem;
+  margin-bottom: 2.8rem;
+  margin-top: 0.6rem;
+  justify-content: center;
+}
+
+/* Quick Tips */
 .quick-tips {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 2rem 2.2rem;
+  border-radius: 14px;
+  box-shadow:
+    0 8px 36px rgba(51, 112, 255, 0.07),
+    0 0 10px 3px rgba(66, 133, 244, 0.14);
+  backdrop-filter: blur(13px);
+  overflow: hidden;
+  animation: fadeUp 0.74s both;
+}
+
+.tips-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  background: linear-gradient(90deg, #48e9cdcc 0%, #6aaaffcc 100%);
+  z-index: 1;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
 }
 
 .quick-tips h3 {
-  color: #333;
-  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+  color: #2f2f2f;
+  margin-bottom: 1em;
+  font-weight: 700;
+  font-size: 1.3rem;
+  text-align: center;
 }
 
 .quick-tips ul {
-  list-style-type: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .quick-tips li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
+  padding: 0.65rem 0 0.65rem 1rem;
+  border-bottom: 1px solid #ddd;
+  font-size: 1.02rem;
+  color: #444;
+  animation: fadeIn 1.15s both;
+  user-select: none;
 }
 
 .quick-tips li:last-child {
   border-bottom: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 650px) {
+  .dashboard-header {
+    padding: 1.2rem 1.5rem;
+  }
+  .dashboard-main {
+    padding: 1rem 1.1rem;
+  }
+  .action-card {
+    height: 170px;
+    padding: 1rem 1rem;
+  }
+  .quick-tips {
+    padding: 1.5rem 1.6rem;
+  }
+  .fixed-size-btn {
+    width: 95px;
+    height: 36px;
+  }
+  .user-menu {
+    max-width: 310px;
+    margin-right: 0.5rem;
+  }
+}
+
+/* Body fix for smooth animation */
+body {
+  background-attachment: fixed;
 }
