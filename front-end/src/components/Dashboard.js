@@ -26,21 +26,21 @@ const Dashboard = ({ user, onLogout }) => {
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header glass-float">
+      <header className="dashboard-header glass-card lift-hover">
         <div className="dashboard-header-gradient"></div>
-        <h1>
+        <h1 className="header-title">
           <span className="pulse-logo">🍃</span> Health Assistant
         </h1>
-        <div className="user-menu float">
+        <div className="user-menu float glass-card lift-hover">
           <span className="user-welcome-text">Welcome, {user?.name}</span>
           <button
             onClick={() => {
               onLogout();
-              // Optional: Animate fade scale out on logout too
               const container = document.querySelector('.dashboard-container');
               if (container) container.classList.add('fade-scale-out');
             }}
-            className="logout-btn lift-hover fixed-size-btn"
+            className="logout-btn lift-hover fixed-size-btn glass-card"
+            aria-label="Logout"
           >
             Logout
           </button>
@@ -82,6 +82,7 @@ const Dashboard = ({ user, onLogout }) => {
               onKeyPress={(e) => e.key === 'Enter' && handleNavigation(path)}
               className="action-card fade-up lift-hover clickable fixed-size-card"
               style={{ animationDelay: `${0.1 + idx * 0.15}s` }}
+              aria-label={`Go to ${title}`}
             >
               <div className="card-icon bounce">{icon}</div>
               <h3 className="emitting-text">{title}</h3>

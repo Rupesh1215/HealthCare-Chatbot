@@ -1,5 +1,6 @@
 /* Dashboard.css */
 
+/* Animation Keyframes */
 @keyframes fadeUp {
   0% {
     opacity: 0;
@@ -31,7 +32,7 @@
     transform: scale(1);
   }
   50% {
-    transform: scale(1.1);
+    transform: scale(1.12);
   }
   100% {
     transform: scale(1);
@@ -55,106 +56,21 @@
     transform: scale(0.75);
   }
 }
+@keyframes floatUpDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
 
-/* fade and scale out animation for container */
+/* Container fade out animation */
 .dashboard-container.fade-scale-out {
   animation: fadeScaleOut 0.5s forwards ease;
 }
 
-/* Emitting glowing text with reduced intensity */
-.emitting-text {
-  position: relative;
-  color: #4285f4;
-  font-weight: 700;
-  text-align: center;
-  text-shadow:
-    0 0 4px #4285f4aa,
-    0 0 8px #81a6f980;
-}
-
-/* Card style with fixed width and height for consistency */
-.fixed-size-card {
-  width: 300px;
-  height: 190px;
-}
-
-/* Button style with fixed dimensions for consistency */
-.fixed-size-btn {
-  width: 110px;
-  height: 40px;
-  font-size: 1rem;
-  padding: 0;
-}
-
-/* Reduced glow border for cards */
-.action-card {
-  background: rgba(255, 255, 255, 0.91);
-  backdrop-filter: blur(14px);
-  border-radius: 14px;
-  box-shadow:
-    0 0 8px 1.5px rgba(66, 133, 244, 0.18),
-    0 6px 20px rgba(66, 133, 244, 0.12);
-  color: #222;
-  text-decoration: none;
-  cursor: pointer;
-
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Center horizontally */
-  justify-content: center; /* Center vertically */
-  padding: 1.6em 1.2em;
-  max-width: 320px;
-  margin: 1rem auto;
-  text-align: center; /* Center text */
-
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-  animation: fadeUp 0.75s cubic-bezier(0.44, 0.37, 0.26, 1.29) backwards;
-}
-
-/* Lift animation on hover */
-.lift-hover:hover,
-.lift-hover:focus {
-  animation: jump 0.35s ease;
-  transform-origin: center bottom;
-  box-shadow:
-    0 0 14px 3px rgba(66, 133, 244, 0.35),
-    0 14px 42px rgba(59, 97, 187, 0.21);
-  background: rgba(255, 255, 255, 0.97);
-}
-
-/* Remove jump if animation playing - fallback */
-.action-card:active {
-  animation: none;
-  transform: scale(0.98);
-  box-shadow:
-    0 0 18px 3px rgba(66, 133, 244, 0.4);
-  background: #e3e9ff;
-}
-
-/* Bounce animation for icons with reduced size */
-.card-icon {
-  font-size: 2.7rem;
-  color: #4285f4;
-  margin-bottom: 0.6em;
-  animation: bounceIcon 1.2s ease-in-out infinite;
-}
-
-/* Text styles with reduced size */
-.action-card h3 {
-  font-size: 1.35rem;
-  margin: 0.2em 0 0.55em 0;
-  user-select: none;
-}
-
-.action-card p {
-  font-size: 1rem;
-  color: #444;
-  user-select: none;
-  line-height: 1.3;
-}
-
-/* Container background and font */
+/* Overall Container */
 .dashboard-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #b9c6f9 0%, #e8ecfa 50%, #f5f5f5 100%);
@@ -163,77 +79,131 @@
   padding-top: 1.5rem;
 }
 
-/* Floating user menu */
+/* Glassmorphic card style shared by header, logout, and user menu for consistency */
+.glass-card {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: saturate(180%) blur(16px);
+  border-radius: 18px;
+  box-shadow:
+    0 2px 8px rgba(66, 133, 244, 0.14),
+    0 10px 28px rgba(66, 133, 244, 0.09);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
+}
+
+/* Header styles */
+.dashboard-header {
+  position: relative;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 18px;
+  overflow: hidden;
+  z-index: 10;
+  animation: fadeIn 0.9s ease forwards;
+}
+
+/* Header gradient overlay */
+.dashboard-header-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, #6389f9cc, #4becccaa);
+  mix-blend-mode: screen;
+  filter: brightness(1.1);
+  pointer-events: none;
+  border-radius: 18px;
+  z-index: 0;
+}
+
+/* Header title with pulse logo */
+.header-title {
+  position: relative;
+  color: #3366cc;
+  font-weight: 900;
+  font-size: 2.25rem;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  z-index: 1;
+}
+.pulse-logo {
+  display: inline-block;
+  animation: pulseLogo 3.8s ease-in-out infinite;
+  user-select: none;
+}
+
+/* User menu with floating animation */
 .user-menu {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 1.1rem;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.82);
-  border-radius: 40px;
-  padding: 0.28rem 1rem;
-  box-shadow: 0 4px 18px rgba(66, 133, 244, 0.12);
-  animation: fadeIn 0.7s both;
+  padding: 0.3rem 1.2rem;
   justify-content: space-between;
-}
-
-/* Use consistent width for user menu to align with cards */
-.user-menu {
   max-width: 450px;
   margin-left: auto;
   margin-right: 1rem;
+  user-select: none;
+  animation: fadeIn 0.8s both, floatUpDown 3.4s ease-in-out infinite;
 }
 
 /* User welcome text */
 .user-welcome-text {
-  color: #2c2c2c;
-  font-size: 1.1rem;
+  color: #222f5a;
+  font-size: 1.14rem;
+  white-space: nowrap;
+  z-index: 1;
 }
 
-/* Logout Button with lift effect */
+/* Logout button styling consistent and animated */
 .logout-btn {
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1rem;
   border: none;
   border-radius: 40px;
   color: white;
   background: linear-gradient(90deg, #f44336 0%, #d32f2f 100%);
-  box-shadow: 0 2px 6px rgba(244, 67, 54, 0.12);
-  transition: box-shadow 0.3s ease, background 0.25s ease;
+  box-shadow: 0 2px 10px rgba(244, 67, 54, 0.3);
   padding: 0.4em 1.25em;
   height: 40px;
   width: 110px;
   display: flex;
   justify-content: center;
   align-items: center;
+  user-select: none;
+  transition: box-shadow 0.3s ease, background 0.25s ease, transform 0.25s ease;
+  z-index: 1;
 }
-
 .logout-btn:hover {
-  box-shadow: 0 7px 22px rgba(244, 67, 54, 0.3);
+  box-shadow: 0 14px 28px rgba(244, 67, 54, 0.6);
   background: linear-gradient(90deg, #d32f2f 0%, #f44336 100%);
+  transform: scale(1.05);
 }
 
-/* Welcome Section */
+/* Main welcome section */
 .welcome-section {
   text-align: center;
   margin-bottom: 3rem;
-  animation: fadeIn 1s;
+  animation: fadeIn 1.1s forwards;
 }
-
 .welcome-section h2 {
-  font-weight: 700;
-  font-size: 1.85rem;
+  font-weight: 800;
+  font-size: 1.9rem;
   color: #26345d;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.4rem;
+  text-shadow: 0 1px 4px rgb(100 100 110 / 0.15);
+  user-select: none;
 }
-
 .welcome-section p {
   font-size: 1.1rem;
   color: #545454;
+  user-select: none;
 }
 
-/* Center cards grid with fixed row height */
+/* Action cards container */
 .action-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -244,42 +214,129 @@
   justify-content: center;
 }
 
-/* Quick Tips */
-.quick-tips {
-  position: relative;
-  background: rgba(255, 255, 255, 0.82);
-  padding: 2rem 2.2rem;
-  border-radius: 14px;
+/* Action card styling with glass and softer shadows */
+.action-card {
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: saturate(180%) blur(15px);
+  border-radius: 18px;
   box-shadow:
-    0 8px 36px rgba(51, 112, 255, 0.07),
-    0 0 10px 3px rgba(66, 133, 244, 0.14);
-  backdrop-filter: blur(13px);
-  overflow: hidden;
-  animation: fadeUp 0.74s both;
+    0 2px 6px rgba(66, 133, 244, 0.12),
+    0 8px 20px rgba(66, 133, 244, 0.10);
+  color: #222333;
+  cursor: pointer;
+  text-decoration: none;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.3em 1.4em;
+  max-width: 320px;
+  margin: 1rem auto;
+  text-align: center;
+
+  transition: transform 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
+  animation: fadeUp 0.75s cubic-bezier(0.44, 0.37, 0.26, 1.29) backwards;
+  user-select: none;
+
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-height: 190px;
 }
 
+/* Card hover lift and glow */
+.lift-hover:hover,
+.lift-hover:focus {
+  animation: jump 0.35s ease;
+  transform-origin: center bottom;
+  box-shadow:
+    0 6px 18px rgba(66, 133, 244, 0.24),
+    0 15px 45px rgba(59, 97, 187, 0.16);
+  background: rgba(255, 255, 255, 0.97);
+  transform: translateY(-8px) scale(1.06);
+  outline: none;
+}
+
+/* When active (clicked) */
+.action-card:active {
+  animation: none;
+  transform: scale(0.97);
+  box-shadow:
+    0 0 20px 5px rgba(66, 133, 244, 0.55);
+  background: #e3e9ff;
+}
+
+/* Card icon bounce */
+.card-icon {
+  font-size: 2.8rem;
+  color: #3a60b2;
+  margin-bottom: 0.7em;
+  animation: bounceIcon 1.3s ease-in-out infinite;
+  user-select: none;
+}
+
+/* Card title */
+.action-card h3 {
+  font-size: 1.4rem;
+  margin: 0.3em 0 0.5em 0;
+  user-select: none;
+  color: #3366cc;
+  text-shadow: 0 0 6px #4285f420;
+  line-height: 1.25;
+}
+
+/* Card description */
+.action-card p {
+  font-size: 1rem;
+  color: #444666;
+  user-select: none;
+  line-height: 1.4;
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+/* Quick tips container with glass and gradient */
+.quick-tips {
+  position: relative;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 2rem 2.2rem;
+  border-radius: 18px;
+  box-shadow:
+    0 10px 38px rgba(51, 112, 255, 0.08),
+    0 0 12px 4px rgba(66, 133, 244, 0.16);
+  backdrop-filter: saturate(180%) blur(18px);
+  overflow: hidden;
+  animation: fadeUp 0.8s both;
+  user-select: none;
+}
+
+/* Gradient bar on tips */
 .tips-gradient {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 18px;
+  height: 22px;
   background: linear-gradient(90deg, #48e9cdcc 0%, #6aaaffcc 100%);
   z-index: 1;
-  border-top-left-radius: 14px;
-  border-top-right-radius: 14px;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
 }
 
+/* Quick tips title */
 .quick-tips h3 {
   position: relative;
   z-index: 2;
   color: #2f2f2f;
-  margin-bottom: 1em;
+  margin-bottom: 1.2em;
   font-weight: 700;
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   text-align: center;
+  user-select: none;
 }
 
+/* Tips list */
 .quick-tips ul {
   list-style: none;
   margin: 0;
@@ -288,30 +345,41 @@
   z-index: 2;
 }
 
+/* Tips individual */
 .quick-tips li {
   padding: 0.65rem 0 0.65rem 1rem;
   border-bottom: 1px solid #ddd;
-  font-size: 1.02rem;
+  font-size: 1.05rem;
   color: #444;
   animation: fadeIn 1.15s both;
   user-select: none;
+  transition: color 0.3s ease;
 }
 
 .quick-tips li:last-child {
   border-bottom: none;
 }
 
-/* Responsive adjustments */
+.quick-tips li:hover {
+  color: #4285f4;
+  font-weight: 700;
+}
+
+/* Responsive design */
 @media (max-width: 650px) {
   .dashboard-header {
     padding: 1.2rem 1.5rem;
+    border-radius: 12px;
   }
   .dashboard-main {
     padding: 1rem 1.1rem;
   }
   .action-card {
-    height: 170px;
-    padding: 1rem 1rem;
+    min-height: 160px;
+    padding: 1.1em 1.1em;
+  }
+  .action-card p {
+    font-size: 0.95rem;
   }
   .quick-tips {
     padding: 1.5rem 1.6rem;
