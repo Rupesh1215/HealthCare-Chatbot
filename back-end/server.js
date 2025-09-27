@@ -5,7 +5,7 @@ const socketIo = require('socket.io');
 const cors = require('cors');
 const db = require('./config/database');
 const chatController = require('./controllers/chatController');
-const { processHealthQuery } = require('./services/rapidApiService');
+const { processHealthQuery } = require('./services/openaiService');
 const auth = require('./middleware/auth');
 
 const authRoutes = require('./routes/auth');
@@ -33,7 +33,7 @@ app.use('/auth', authRoutes);
 app.use('/chat', chatRoutes);
 app.use('/user', userRoutes);
 
-// Basic health check endpoint
+// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
@@ -41,43 +41,42 @@ app.get('/health', (req, res) => {
 // Socket.io for real-time chat
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
-  
-  // In the socket.io message handler, add language support:
-socket.on('user_message', async (data) => {
-  console.log('Received message:', data);
-  
-  // Show typing indicator
-  socket.emit('bot_typing');
-  
-  try {
-    // Process with RapidAPI ChatGPT - pass language if needed
-    const aiResponse = await processHealthQuery(data.message, data.userId, data.language);
-    
-    // Save chat to database
-    await chatController.saveChat(data.userId, data.message, aiResponse);
-    
-    // Send response to client
-    socket.emit('chat_message', { 
-      message: aiResponse
-    });
-    
-  } catch (error) {
-    console.error('Error processing message with AI:', error);
-    
-    const errorResponse = `I apologize, but I'm experiencing technical difficulties. 😔
+
+  socket.on('user_message', async (data) => {
+    console.log('Received message:', data);
+
+    // Show typing indicator
+    socket.emit('bot_typing');
+
+    try {
+      // Process with Gemini AI - pass user's language for multilingual reply
+      const aiResponse = await processHealthQuery(data.message, data.userId, data.language);
+
+      // Save chat to database
+      await chatController.saveChat(data.userId, data.message, aiResponse);
+
+      // Send response to client
+      socket.emit('chat_message', {
+        message: aiResponse
+      });
+
+    } catch (error) {
+      console.error('Error processing message with AI:', error);
+
+      const errorResponse = `I apologize, but I'm experiencing technical difficulties. 😔
 
 ${error.message}
 
 Please try asking your question again.`;
 
-    await chatController.saveChat(data.userId, data.message, errorResponse);
-    
-    socket.emit('chat_message', { 
-      message: errorResponse
-    });
-  }
-});
-  
+      await chatController.saveChat(data.userId, data.message, errorResponse);
+
+      socket.emit('chat_message', {
+        message: errorResponse
+      });
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });

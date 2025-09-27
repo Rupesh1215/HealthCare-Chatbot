@@ -9,7 +9,7 @@ export const cleanTextForSpeech = (text) => {
     .replace(/\*(.*?)\*/g, '$1')
     .replace(/`(.*?)`/g, '$1')
     .replace(/#{1,6}\s?/g, '')
-    .replace(/```[\s\S]*?```/g, '')
+    .replace(/``````/g, '')
     .replace(/\[(.*?)\]\(.*?\)/g, '$1')
     .replace(/<[^>]*>/g, '')
     .replace(/[*#~`_\-]/g, ' ');
@@ -43,6 +43,7 @@ export const cleanTextForSpeech = (text) => {
 
   return cleaned;
 };
+
 
 export const isHealthContent = (text) => {
   if (typeof text !== 'string') return false;

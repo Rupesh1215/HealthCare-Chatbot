@@ -8,7 +8,7 @@ class SpeechSynthesis {
     this.volume = 0.8;
   }
 
-  init() {
+  async init() {
     return new Promise((resolve) => {
       if (this.synth.getVoices().length > 0) {
         this.voices = this.synth.getVoices();
@@ -25,11 +25,10 @@ class SpeechSynthesis {
   }
 
   selectVoice(language = 'en-US') {
-    // Prefer Google voices for better quality
+    // Prefer Google voices for better quality and accuracy
     const preferredVoices = this.voices.filter(voice => 
       voice.voiceURI.includes('Google') && voice.lang.includes(language)
     );
-    
     if (preferredVoices.length > 0) {
       this.selectedVoice = preferredVoices[0];
     } else {
@@ -37,7 +36,16 @@ class SpeechSynthesis {
       const languageVoices = this.voices.filter(voice => 
         voice.lang.includes(language)
       );
-      this.selectedVoice = languageVoices[0] || null;
+      if (languageVoices.length > 0) {
+        this.selectedVoice = languageVoices[0];
+      } else {
+        // If no suitable language voice is found, fallback to English
+        this.selectedVoice = this.voices.find(v => v.lang.includes('en-US')) || null;
+        // Optionally, add logging or UI feedback here
+        if (!this.selectedVoice) {
+          alert('No suitable voice found for selected language. Speech may not work.');
+        }
+      }
     }
   }
 

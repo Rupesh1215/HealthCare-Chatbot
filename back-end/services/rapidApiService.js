@@ -73,7 +73,7 @@ async function processHealthQuery(userMessage, userId) {
         'X-RapidAPI-Host': RAPIDAPI_HOST
       },
       data: requestData,
-      timeout: 20000 // 20 second timeout for GPT-4
+      timeout: 200000 // 20 second timeout for GPT-4
     };
 
     console.log('Sending request to RapidAPI GPT-4...');
